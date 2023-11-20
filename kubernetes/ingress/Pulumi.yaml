@@ -1,3 +1,0 @@
-name: ingress
-runtime: nodejs
-description: Creates a Kubernetes Ingress within a cluster
