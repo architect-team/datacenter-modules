@@ -1,0 +1,3 @@
+name: aws-lb-controller
+runtime: nodejs
+description: A module that creates an AWS LB controller within a cluster
