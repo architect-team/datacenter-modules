@@ -3,9 +3,9 @@ name: Build and publish modules
 on:
   workflow_dispatch:
   push:
-    paths:
-      - kubernetes/**
-      - aws/**
+    # paths:
+    #   - kubernetes/**
+    #   - aws/**
 
 jobs:
   push_modules:
