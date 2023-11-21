@@ -8,8 +8,9 @@ on:
       - 'aws/**'
 
 jobs:
-  push_main_to_registry:
-    if: github.ref_name == 'main' || startsWith(github.ref_name, 'arc-')
+  push_modules:
+    # TODO: Uncomment if this works
+    # if: github.ref_name == 'main' || startsWith(github.ref_name, 'arc-')
     name: Push Docker image to Docker Hub
     strategy:
       matrix:
