@@ -14,7 +14,7 @@ jobs:
     name: Build and push modules
     strategy:
       matrix:
-        platform: [linux/amd64, linux/arm64]
+        platform: [linux/amd64]  # TODO: linux/arm64 isn't working
         folder: [aws, kubernetes]
     runs-on: ubuntu-latest
     steps:
@@ -42,8 +42,6 @@ jobs:
             # Remove dot from front of dirname
             NODOT="${DIR#*/}"
             # Remove chars not allowed in docker repo names
-            CLEANDIR="${NODOT//[\/-]/ }"
-            # REPONAME is now e.g. /aws/eks -> awsEks, /aws/eks-ingress -> awsEksIngress
-            REPONAME=$( echo $CLEANDIR | awk 'BEGIN{OFS=""};{for(j=1;j<=NF;j++){ if(j==1){$j=tolower($j)} else {$j=toupper(substr($j,1,1)) tolower(substr($j,2)) }}}1')
-            ./arcctl build module $DIR --plugin $PLUGIN --name architectio/$REPONAME --tag latest --platform ${{ matrix.platform }} --push
+            CLEANDIR="${NODOT//[\/-]/}"
+            ./arcctl build module $DIR --plugin $PLUGIN --name architectio/$CLEANDIR --tag latest --platform ${{ matrix.platform }} --push
           done
