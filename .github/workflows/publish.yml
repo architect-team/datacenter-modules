@@ -1,0 +1,48 @@
+name: Build and publish modules
+
+on:
+  workflow_dispatch:
+  push:
+    paths:
+      - kubernetes/**
+      - aws/**
+
+jobs:
+  push_main_to_registry:
+    if: github.ref_name == 'main' || startsWith(github.ref_name, 'arc-')
+    name: Push Docker image to Docker Hub
+    strategy:
+      matrix:
+        platform: [linux/amd64, linux/arm64]
+        folder: [aws, kubernetes]
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out the repo
+        uses: actions/checkout@v4
+      - name: Log in to Docker Hub
+        uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKER_USERNAME }}
+          password: ${{ secrets.DOCKER_PASSWORD }}
+      # TODO: Add cache here
+      - name: Download arcctl
+        run: curl -SL https://arcctl-dcs.nyc3.digitaloceanspaces.com/arcctl --output arcctl
+      - name: Make arcctl executable
+        run: chmod +x ./arcctl
+      - name: Build and push matrix
+        run: |
+          for DIR in ./${{ matrix.folder }}/*/
+          do
+            # Determines plugin based on whether a Pulumi file exists or not.
+            PLUGIN=opentofu
+            if [ -f "$DIR/Pulumi.yaml" ]; then
+              PLUGIN=pulumi
+            fi
+            # Remove dot from front of dirname
+            NODOT="${DIR#*/}"
+            # Remove chars not allowed in docker repo names
+            CLEANDIR="${NODOT//[\/-]/ }"
+            # REPONAME is now e.g. /aws/eks -> awsEks, /aws/eks-ingress -> awsEksIngress
+            REPONAME=$( echo $CLEANDIR | awk 'BEGIN{OFS=""};{for(j=1;j<=NF;j++){ if(j==1){$j=tolower($j)} else {$j=toupper(substr($j,1,1)) tolower(substr($j,2)) }}}1')
+            ./arcctl build module $DIR --plugin $PLUGIN --name architectio/$REPONAME --tag latest --platform ${{ matrix.platform }} --push
+          done
