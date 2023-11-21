@@ -4,8 +4,8 @@ on:
   workflow_dispatch:
   push:
     paths:
-      - kubernetes/**
-      - aws/**
+      - 'kubernetes/**'
+      - 'aws/**'
 
 jobs:
   push_main_to_registry:
