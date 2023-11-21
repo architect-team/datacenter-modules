@@ -4,14 +4,14 @@ on:
   workflow_dispatch:
   push:
     paths:
-      - 'kubernetes/**'
-      - 'aws/**'
+      - kubernetes/**
+      - aws/**
 
 jobs:
   push_modules:
     # TODO: Uncomment if this works
-    # if: github.ref_name == 'main' || startsWith(github.ref_name, 'arc-')
-    name: Push Docker image to Docker Hub
+    if: github.ref_name == 'main' || startsWith(github.ref_name, 'arc-') || true
+    name: Build and push modules
     strategy:
       matrix:
         platform: [linux/amd64, linux/arm64]
