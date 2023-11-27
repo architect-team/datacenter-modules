@@ -42,5 +42,5 @@ jobs:
             NODOT="${DIR#*/}"
             # Remove chars not allowed in docker repo names
             CLEANDIR="${NODOT//[\/-]/}"
-            ./arcctl build module $DIR --plugin $PLUGIN --name architectio/$CLEANDIR --tag latest --platform ${{ matrix.platform }} --push
+            ./arcctl build module $DIR --plugin $PLUGIN --name architectio/$CLEANDIR --tag latest --platform ${{ matrix.platform }} --push -v
           done
