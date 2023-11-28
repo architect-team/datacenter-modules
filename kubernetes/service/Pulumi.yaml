@@ -1,0 +1,3 @@
+name: service
+runtime: nodejs
+description: Creates a Kubenetes Service within a cluster

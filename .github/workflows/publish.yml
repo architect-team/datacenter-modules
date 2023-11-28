@@ -1,0 +1,50 @@
+name: Build and publish modules
+
+on:
+  workflow_dispatch:
+  push:
+    paths:
+      - kubernetes/**
+      - aws/**
+
+jobs:
+  push_modules:
+    if: github.ref_name == 'main' || startsWith(github.ref_name, 'arc-')
+    name: Build and push modules
+    strategy:
+      matrix:
+        platform: [linux/amd64, linux/arm64]
+        folder: [aws, kubernetes]
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out the repo
+        uses: actions/checkout@v4
+      # For multi-platform image support
+      - name: Set up QEMU
+        uses: docker/setup-qemu-action@v3
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+      - name: Log in to Docker Hub
+        uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKER_USERNAME }}
+          password: ${{ secrets.DOCKER_PASSWORD }}
+      - name: Download arcctl
+        run: curl -SL https://arcctl-dcs.nyc3.digitaloceanspaces.com/arcctl --output arcctl
+      - name: Make arcctl executable
+        run: chmod +x ./arcctl
+      - name: Build and push matrix
+        run: |
+          for DIR in ./${{ matrix.folder }}/*/
+          do
+            # Determines plugin based on whether a Pulumi file exists or not.
+            PLUGIN=opentofu
+            if [ -f "$DIR/Pulumi.yaml" ]; then
+              PLUGIN=pulumi
+            fi
+            # Remove dot from front of dirname
+            NODOT="${DIR#*/}"
+            # Remove chars not allowed in docker repo names
+            CLEANDIR="${NODOT//[\/-]/}"
+            ./arcctl build module $DIR --plugin $PLUGIN --name architectio/$CLEANDIR --tag latest --platform ${{ matrix.platform }} --push --verbose
+          done
