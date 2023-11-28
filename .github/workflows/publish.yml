@@ -3,14 +3,13 @@ name: Build and publish modules
 on:
   workflow_dispatch:
   push:
-    # paths:
-    #   - kubernetes/**
-    #   - aws/**
+    paths:
+      - kubernetes/**
+      - aws/**
 
 jobs:
   push_modules:
-    # TODO: Uncomment if this works
-    if: github.ref_name == 'main' || startsWith(github.ref_name, 'arc-') || true
+    if: github.ref_name == 'main' || startsWith(github.ref_name, 'arc-')
     name: Build and push modules
     strategy:
       matrix:
@@ -47,5 +46,5 @@ jobs:
             NODOT="${DIR#*/}"
             # Remove chars not allowed in docker repo names
             CLEANDIR="${NODOT//[\/-]/}"
-            ./arcctl build module $DIR --plugin $PLUGIN --name architectio/$CLEANDIR --tag latest --platform ${{ matrix.platform }} --push -v
+            ./arcctl build module $DIR --plugin $PLUGIN --name architectio/$CLEANDIR --tag latest --platform ${{ matrix.platform }} --push --verbose
           done
